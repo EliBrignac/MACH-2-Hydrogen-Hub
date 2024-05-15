@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from verified import load_data, increment_validation_count
 
 
 # Load the data
@@ -49,6 +50,19 @@ core_occupation = st.selectbox('Core Occupation:', ['All'] + list(filtered_data[
 if core_occupation != 'All':
     filtered_data = filtered_data[filtered_data['core_occupation'] == core_occupation]
 
+
+
+df = load_data()
+
+# Display the validation count for the selected combination
+if value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select':
+    row = df[(df['Value Chain'] == value_chain) & (df['Technology'] == technology) & (df['Core Occupation'] == core_occupation)]
+    if not row.empty:
+        validation_count = row['Validation Count'].iloc[0]
+        st.write(f"Current validation count for this configuration: {validation_count}")
+    else:
+        st.write("This configuration has not yet been validated.")
+
 # Display the results
 st.subheader(f"Requirements for:")
 signature = f'<p style="color:grey; font-size: 20px;">{value_chain} - {technology} - {core_occupation}</p>'
@@ -97,14 +111,18 @@ Validating model for:
                 "Technology": technology,
                 "Core Occupation": core_occupation
             }
-            df = pd.DataFrame([form_data])
-            df.to_csv('validation_data.csv', mode='a', header=not pd.io.common.file_exists('validation_data.csv'), index=False)
+            df_raw = pd.DataFrame([form_data])
+            df_raw.to_csv('raw_forms.csv', mode='a', header=not pd.io.common.file_exists('raw_forms.csv'), index=False)
             st.success("Thank you for your feedback!")
 
+            increment_validation_count(value_chain, technology, core_occupation)
+            df = load_data()
 
-
-
-            # Process the validation feedback as needed
+            if not row.empty:
+                validation_count = row['Validation Count'].iloc[0]
+                st.write(f"Updated validation count for this configuration: {validation_count}")
+            else:
+                st.write("This configuration has now been validated for the first time.")
 
 
 # base_url = "https://your-deployment-url.com/validate_form"  # Change this to the URL where your validation form is deployed
