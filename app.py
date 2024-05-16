@@ -42,15 +42,10 @@ core_occupation = st.selectbox('Core Occupation:', ['Select'] + list(filtered_da
 if core_occupation != 'Select':
     filtered_data = filtered_data[filtered_data['core_occupation'] == core_occupation]
 
-# Display Validation
-
-st.write("Current Validation:", get_validation_count(value_chain, technology, core_occupation))
-
-
 # Load the validation data
 spell_checked_csv = pd.read_csv('comma_fixed.csv')
 
-job_description_df = pd.read_excel(r'C:\Users\Eli Brignac\OneDrive\Desktop\Hydrogen\MACH-2-Hydrogen-Hub\given_files\Production_Electrolysis_Occupations.xlsx')
+job_description_df = pd.read_excel(r'given_files\Production_Electrolysis_Occupations.xlsx')
 job_description_df = job_description_df.replace('\n', '', regex=True)
 job_description_df = job_description_df.replace('_x000D_', '', regex=True)
 job_description_df = job_description_df.replace('°', ' ', regex=True)
@@ -120,6 +115,10 @@ else:
 
 
 
+
+# Display Validation
+
+st.write("Current Validation:", get_validation_count(value_chain, technology, core_occupation))
 
 
 st.markdown("#### Form Validation Dropdown")
