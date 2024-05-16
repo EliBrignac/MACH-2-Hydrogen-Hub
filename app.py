@@ -44,11 +44,27 @@ if core_occupation != 'Select':
 # Load the validation data
 spell_checked_csv = pd.read_csv('comma_fixed.csv')
 
+job_description_df = pd.read_excel(r'C:\Users\Eli Brignac\OneDrive\Desktop\Hydrogen\MACH-2-Hydrogen-Hub\given_files\Production_Electrolysis_Occupations.xlsx')
+job_description_df = job_description_df.replace('\n', '', regex=True)
+job_description_df = job_description_df.replace('_x000D_', '', regex=True)
+job_description_df = job_description_df.replace('°', ' ', regex=True)
+job_description_df = job_description_df.replace('_x0002_', ' ', regex=True)
+
+
+
 # Display the validation count for the selected combination
 if not (value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select'):
-    st.markdown(f"Please select a value chain, technology, and core occupation to view the requirements.")
+    st.markdown(f"#### Please select a value chain, technology, and core occupation to view the requirements.")
 else:
-    st.markdown(f"Hydrogen Related Requirements for {value_chain} - {technology} - {core_occupation}")
+    st.markdown(f"#### Key Activities for {value_chain} - {technology} - {core_occupation}")
+    activities = job_description_df[job_description_df['Value Chain'] == value_chain][job_description_df['Technology'] == technology][job_description_df['Core Occupation'] == core_occupation]['Key Activities']
+    activities = list(activities)[0].split('•')
+    for activity in activities:
+        if activity.strip() != '':
+            st.write(f'- {activity}')
+    #st.write(activities)
+
+    st.markdown(f"#### Hydrogen Related Requirements for {value_chain} - {technology} - {core_occupation}")
     if value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select':
         sents = spell_checked_csv[spell_checked_csv['value_chain'] == value_chain][spell_checked_csv['technology'] == technology][spell_checked_csv['core_occupation'] == core_occupation]['unique_requirements_for_hydrogen']
         sents = list(sents)[0].split('.')
@@ -100,7 +116,7 @@ else:
 
 
 
-
+st.markdown("#### Form Validation Dropdown")
 with st.expander("Fill out form below to validate the model"):
     with st.form(key='validation_form'):
         # static text for showing the user what filters they are validating
@@ -161,7 +177,9 @@ Validating model for:
 
 
 # Most relevant requirements
-st.subheader("Most Relevant Requirements")
+
+st.markdown("## Analytics Summary")
+st.markdown("#### Most Relevant Requirements")
 
 
 st.markdown("""
