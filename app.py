@@ -24,6 +24,41 @@ st.markdown(
 st.title("Hydrogen Technology Requirements Explorer")
 
 
+# ==============================================================================================================
+
+# Select Boxes
+value_chain = st.selectbox('Value Chain:', ['Select'] + list(data['value_chain'].unique()))
+if value_chain != 'Select':
+    filtered_data = data[data['value_chain'] == value_chain]
+else:
+    filtered_data = data
+
+technology = st.selectbox('Technology:', ['Select'] + list(filtered_data['technology'].unique()))
+if technology != 'Select':
+    filtered_data = filtered_data[filtered_data['technology'] == technology]
+
+core_occupation = st.selectbox('Core Occupation:', ['Select'] + list(filtered_data['core_occupation'].unique()))
+if core_occupation != 'Select':
+    filtered_data = filtered_data[filtered_data['core_occupation'] == core_occupation]
+
+# Load the validation data
+spell_checked_csv = pd.read_csv('comma_fixed.csv')
+
+# Display the validation count for the selected combination
+if not (value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select'):
+    st.markdown(f"Please select a value chain, technology, and core occupation to view the requirements.")
+else:
+    st.markdown(f"Hydrogen Related Requirements for {value_chain} - {technology} - {core_occupation}")
+    if value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select':
+        sents = spell_checked_csv[spell_checked_csv['value_chain'] == value_chain][spell_checked_csv['technology'] == technology][spell_checked_csv['core_occupation'] == core_occupation]['unique_requirements_for_hydrogen']
+        sents = list(sents)[0].split('.')
+        for sent in sents:
+            st.write(f'- {sent}')
+
+# ==============================================================================================================
+
+
+
 # with st.form("my_form"):
 #     value_chain = st.selectbox('Value Chain:', ['Select'] + list(data['value_chain'].unique()))
 #     technology = st.selectbox('Technology:', ['Select'] + list(data[data['value_chain'] == value_chain]['technology'].unique()))
@@ -35,45 +70,30 @@ st.title("Hydrogen Technology Requirements Explorer")
 #         st.write("Submitted")
 
 
-# Select Boxes
-value_chain = st.selectbox('Value Chain:', ['Select'] + list(data['value_chain'].unique()))
-if value_chain != 'All':
-    filtered_data = data[data['value_chain'] == value_chain]
-else:
-    filtered_data = data
 
-technology = st.selectbox('Technology:', ['Select'] + list(filtered_data['technology'].unique()))
-if technology != 'All':
-    filtered_data = filtered_data[filtered_data['technology'] == technology]
+# #df = load_data()
+# df = pd.read_csv('validation_data.csv')
 
-core_occupation = st.selectbox('Core Occupation:', ['All'] + list(filtered_data['core_occupation'].unique()))
-if core_occupation != 'All':
-    filtered_data = filtered_data[filtered_data['core_occupation'] == core_occupation]
+# # Display the validation count for the selected combination
+# if value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select':
+#     row = df[(df['Value Chain'] == value_chain) & (df['Technology'] == technology) & (df['Core Occupation'] == core_occupation)]
+#     if not row.empty:
+#         validation_count = row['Validation Count'].iloc[0]
+#         st.write(f"Current validation count for this configuration: {validation_count}")
+#     else:
+#         st.write("This configuration has not yet been validated.")
 
+# # Display the results
+# st.subheader(f"Requirements for:")
+# signature = f'<p style="color:grey; font-size: 20px;">{value_chain} - {technology} - {core_occupation}</p>'
+# st.markdown(signature, unsafe_allow_html=True)
 
-
-df = load_data()
-
-# Display the validation count for the selected combination
-if value_chain != 'Select' and technology != 'Select' and core_occupation != 'Select':
-    row = df[(df['Value Chain'] == value_chain) & (df['Technology'] == technology) & (df['Core Occupation'] == core_occupation)]
-    if not row.empty:
-        validation_count = row['Validation Count'].iloc[0]
-        st.write(f"Current validation count for this configuration: {validation_count}")
-    else:
-        st.write("This configuration has not yet been validated.")
-
-# Display the results
-st.subheader(f"Requirements for:")
-signature = f'<p style="color:grey; font-size: 20px;">{value_chain} - {technology} - {core_occupation}</p>'
-st.markdown(signature, unsafe_allow_html=True)
-
-if len(filtered_data) > 0:
-    requirements = filtered_data['unique_requirements_for_hydrogen'].iloc[0]
-    requirements_bullets = [f'- {requirement.strip()}' for requirement in requirements.split('.')]
-    st.markdown('\n'.join(requirements_bullets))
-else:
-    st.write("No data available for the selected criteria.")
+# if len(filtered_data) > 0:
+#     requirements = filtered_data['unique_requirements_for_hydrogen'].iloc[0]
+#     requirements_bullets = [f'- {requirement.strip()}' for requirement in requirements.split('.')]
+#     st.markdown('\n'.join(requirements_bullets))
+# else:
+#     st.write("No data available for the selected criteria.")
 
 
 
