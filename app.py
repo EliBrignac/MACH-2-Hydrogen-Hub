@@ -116,6 +116,8 @@ with st.expander("Fill out form below to validate the model"):
         - **Core Occupation**: {core_occupation}
         """, unsafe_allow_html=True)
 
+        isValid = st.checkbox("Is the current model accurate to your knowledge?")
+        st.write("\n")
         name = st.text_input("Name")
         contact_info = st.text_input("Contact Information")
         qualifications = st.text_area("Your Qualifications")
@@ -128,6 +130,7 @@ with st.expander("Fill out form below to validate the model"):
                 "Name": name,
                 "Contact Information": contact_info,
                 "Qualifications": qualifications,
+                "Is Valid": isValid,
                 "Strengths": strengths,
                 "Improvements": improvements,
                 "Value Chain": value_chain,
@@ -138,13 +141,16 @@ with st.expander("Fill out form below to validate the model"):
             handle_form_submission(form_data)
 
             # Call the increment function and use the returned DataFrame to get the updated count
-            updated_df = increment_validation_count(value_chain, technology, core_occupation)
-            row = updated_df[(updated_df['Value Chain'] == value_chain) & (updated_df['Technology'] == technology) & (updated_df['Core Occupation'] == core_occupation)]
-            if not row.empty:
-                validation_count = row['Validation Count'].iloc[0]
-                st.write(f"Updated validation count for this configuration: {validation_count}")
+            updated_df = increment_validation_count(value_chain, technology, core_occupation, isValid)
+            if (isValid):
+                row = updated_df[(updated_df['Value Chain'] == value_chain) & (updated_df['Technology'] == technology) & (updated_df['Core Occupation'] == core_occupation)]
+                if not row.empty:
+                    validation_count = row['Validation Count'].iloc[0]
+                    st.write(f"Updated validation count for this configuration: {validation_count}")
+                else:
+                    st.write("This configuration has now been validated for the first time.")
             else:
-                st.write("This configuration has now been validated for the first time.")
+                st.write("Model Invalid")
 
 
 

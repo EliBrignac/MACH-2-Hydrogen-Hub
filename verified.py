@@ -16,27 +16,28 @@ def load_data():
         df.to_csv('validation_data.csv', index=False)
     return df
 
-def increment_validation_count(value_chain, technology, core_occupation):
-    df = load_data()
-    value_chain = value_chain.strip()
-    technology = technology.strip()
-    core_occupation = core_occupation.strip()
-    mask = (df['Value Chain'] == value_chain) & (df['Technology'] == technology) & (df['Core Occupation'] == core_occupation)
-    row_index = df.loc[mask].index
+def increment_validation_count(value_chain, technology, core_occupation, isValid):
+    if (isValid):
+        df = load_data()
+        value_chain = value_chain.strip()
+        technology = technology.strip()
+        core_occupation = core_occupation.strip()
+        mask = (df['Value Chain'] == value_chain) & (df['Technology'] == technology) & (df['Core Occupation'] == core_occupation)
+        row_index = df.loc[mask].index
 
-    if row_index.empty:
-        new_row = pd.DataFrame({
-            "Value Chain": [value_chain],
-            "Technology": [technology],
-            "Core Occupation": [core_occupation],
-            "Validation Count": [1]
-        })
-        df = pd.concat([df, new_row], ignore_index=True)
-    else:
-        df.loc[row_index, "Validation Count"] += 1
+        if row_index.empty:
+            new_row = pd.DataFrame({
+                "Value Chain": [value_chain],
+                "Technology": [technology],
+                "Core Occupation": [core_occupation],
+                "Validation Count": [1]
+            })
+            df = pd.concat([df, new_row], ignore_index=True)
+        else:
+            df.loc[row_index, "Validation Count"] += 1
 
-    df.to_csv('validation_data.csv', index=False)
-    return df
+        df.to_csv('validation_data.csv', index=False)
+        return df
 
 def handle_form_submission(form_data):
     df = pd.DataFrame([form_data])
