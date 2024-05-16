@@ -45,7 +45,7 @@ if core_occupation != 'Select':
 # Load the validation data
 spell_checked_csv = pd.read_csv('comma_fixed.csv')
 
-job_description_df = pd.read_excel(r'given_files\Production_Electrolysis_Occupations.xlsx')
+job_description_df = pd.read_csv(r'./given_files/Production_Electrolysis_Occupations.csv')
 job_description_df = job_description_df.replace('\n', '', regex=True)
 job_description_df = job_description_df.replace('_x000D_', '', regex=True)
 job_description_df = job_description_df.replace('°', ' ', regex=True)
@@ -59,10 +59,14 @@ if not (value_chain != 'Select' and technology != 'Select' and core_occupation !
 else:
     st.markdown(f"#### Key Activities for {value_chain} - {technology} - {core_occupation}")
     activities = job_description_df[job_description_df['Value Chain'] == value_chain][job_description_df['Technology'] == technology][job_description_df['Core Occupation'] == core_occupation]['Key Activities']
-    activities = list(activities)[0].split('•')
-    for activity in activities:
-        if activity.strip() != '':
-            st.write(f'- {activity}')
+    if len(list(activities)) > 0:
+        activities = list(activities)[0].split('•')
+        for activity in activities:
+            if activity.strip() != '':
+                activity = activity.replace("\n", " ").strip()
+                st.write(f'- {activity}')
+    else:
+        st.write(" - No Specific Hydrogen Requirements")
     #st.write(activities)
 
     st.markdown(f"#### Hydrogen Related Requirements for {value_chain} - {technology} - {core_occupation}")
