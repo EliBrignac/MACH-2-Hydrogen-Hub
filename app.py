@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from verified import load_data, increment_validation_count
+from verified import load_data, increment_validation_count, handle_form_submission, get_validation_count
 
 
 # Load the data
@@ -32,6 +32,7 @@ if value_chain != 'Select':
     filtered_data = data[data['value_chain'] == value_chain]
 else:
     filtered_data = data
+    
 
 technology = st.selectbox('Technology:', ['Select'] + list(filtered_data['technology'].unique()))
 if technology != 'Select':
@@ -40,6 +41,11 @@ if technology != 'Select':
 core_occupation = st.selectbox('Core Occupation:', ['Select'] + list(filtered_data['core_occupation'].unique()))
 if core_occupation != 'Select':
     filtered_data = filtered_data[filtered_data['core_occupation'] == core_occupation]
+
+# Display Validation
+
+st.write("Current Validation:", get_validation_count(value_chain, technology, core_occupation))
+
 
 # Load the validation data
 spell_checked_csv = pd.read_csv('comma_fixed.csv')
@@ -119,16 +125,15 @@ else:
 st.markdown("#### Form Validation Dropdown")
 with st.expander("Fill out form below to validate the model"):
     with st.form(key='validation_form'):
-        # static text for showing the user what filters they are validating
         st.markdown(f"""
-Validating model for:
-- **Value Chain**: {value_chain}
-- **Technology**: {technology}
-- **Core Occupation**: {core_occupation}
-""", unsafe_allow_html=True)
+        Validating model for:
+        - **Value Chain**: {value_chain}
+        - **Technology**: {technology}
+        - **Core Occupation**: {core_occupation}
+        """, unsafe_allow_html=True)
 
-
-
+        isValid = st.checkbox("Is the current model accurate to your knowledge?")
+        st.write("\n")
         name = st.text_input("Name")
         contact_info = st.text_input("Contact Information")
         qualifications = st.text_area("Your Qualifications")
@@ -141,24 +146,28 @@ Validating model for:
                 "Name": name,
                 "Contact Information": contact_info,
                 "Qualifications": qualifications,
+                "Is Valid": isValid,
                 "Strengths": strengths,
                 "Improvements": improvements,
                 "Value Chain": value_chain,
                 "Technology": technology,
                 "Core Occupation": core_occupation
             }
-            df_raw = pd.DataFrame([form_data])
-            df_raw.to_csv('raw_forms.csv', mode='a', header=not pd.io.common.file_exists('raw_forms.csv'), index=False)
-            st.success("Thank you for your feedback!")
+            # Write form data to CSV
+            handle_form_submission(form_data)
 
-            increment_validation_count(value_chain, technology, core_occupation)
-            df = load_data()
-
-            if not row.empty:
-                validation_count = row['Validation Count'].iloc[0]
-                st.write(f"Updated validation count for this configuration: {validation_count}")
+            # Call the increment function and use the returned DataFrame to get the updated count
+            updated_df = increment_validation_count(value_chain, technology, core_occupation, isValid)
+            if (isValid):
+                row = updated_df[(updated_df['Value Chain'] == value_chain) & (updated_df['Technology'] == technology) & (updated_df['Core Occupation'] == core_occupation)]
+                if not row.empty:
+                    validation_count = row['Validation Count'].iloc[0]
+                    st.write(f"Updated validation count for this configuration: {validation_count}")
+                else:
+                    st.write("This configuration has now been validated for the first time.")
             else:
-                st.write("This configuration has now been validated for the first time.")
+                st.write("Model Invalid")
+
 
 
 # base_url = "https://your-deployment-url.com/validate_form"  # Change this to the URL where your validation form is deployed
